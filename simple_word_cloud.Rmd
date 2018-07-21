@@ -1,0 +1,49 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Read in a simple text file, do some basic text cleanup, and then spit out a word cloud.
+
+```{r}
+
+# Install/load necessary packages
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse,   # Includes dplyr, ggplot2, and others; very key!
+               tm,          # Text mining
+               # SnowballC,    # Text mining
+               wordcloud)   # Word clouds
+
+# Set a seed so things will replicate
+set.seed(1127)
+
+# Read the files in from a "text_files" subdirector of the working directory
+text_data <- SimpleCorpus(DirSource("text_files"))
+
+# Set specific words to remove
+remove_words <- c("book", "data", "scienc")
+
+# Clean up the data
+text_data <- text_data %>% 
+  tm_map(removeNumbers) %>% 
+  tm_map(removePunctuation) %>% 
+  tm_map(stripWhitespace) %>% 
+  tm_map(tolower) %>% 
+  tm_map(removeWords, stopwords("english")) %>% 
+  tm_map(stemDocument, language = "english") %>% 
+  tm_map(removeWords, remove_words)
+
+
+# Set a color palette
+pal2 <- rev(brewer.pal(8,"Paired")) 
+
+# Generate the wordcloud
+wordcloud(text_data,
+          scale = c(3,.5),       # Play around with this if words "could not be fit on the page"
+          min.freq = 2,         # Set the minimum number of times a word has to appear in order to be included
+          random.color = TRUE,
+          rot.per = 0,
+          colors = pal2)
+
+```
+
